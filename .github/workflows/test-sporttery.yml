@@ -1,0 +1,20 @@
+name: 测试体彩接口连通性
+on: workflow_dispatch
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          UA="Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
+          echo "=== 1. webapi.sporttery.cn ==="
+          curl -sL --max-time 20 -D /tmp/h1 -H "User-Agent: $UA" -H "Referer: https://www.sporttery.cn/" \
+            "https://webapi.sporttery.cn/gateway/jc/football/getMatchListV1.qry?poolCode=hhad,had&channel=c" -o /tmp/r1 -w "HTTP %{http_code} %{size_download}bytes\n"
+          head -c 300 /tmp/r1; echo
+          echo "--- 响应头 ---"; grep -i "access-control\|content-type" /tmp/h1 || echo "无CORS头"
+          echo "=== 2. m.sporttery.cn H5 ==="
+          curl -sL --max-time 20 -H "User-Agent: $UA" -H "Referer: https://m.sporttery.cn/" \
+            "https://m.sporttery.cn/api/jc/football/getMatchListV1.qry?poolCode=hhad,had&channel=c" -o /tmp/r2 -w "HTTP %{http_code} %{size_download}bytes\n"
+          head -c 300 /tmp/r2; echo
+          echo "=== 3. 网易彩票 ==="
+          curl -sL --max-time 20 -H "User-Agent: $UA" "https://caipiao.163.com/app/jingcai/getMatchListV1.qry?poolCode=hhad,had" -o /tmp/r3 -w "HTTP %{http_code} %{size_download}bytes\n"
+          head -c 300 /tmp/r3; echo
