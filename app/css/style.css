@@ -258,3 +258,5 @@ summary::-webkit-details-marker { display: none; }
   .modal-mask { align-items: center; }
   .modal { border-radius: 20px; }
 }
+
+.top-actions { display: flex; gap: 10px; }
