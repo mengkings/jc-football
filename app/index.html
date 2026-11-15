@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0e0d">
+<meta name="description" content="竞彩智算 —— 基于泊松模型与市场赔率混合的竞彩足球赛前概率推演工具">
+<title>竞彩智算 · 赛前概率推演</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 48 48" aria-hidden="true">
+          <rect x="5" y="5" width="38" height="38" rx="10" fill="none" stroke="var(--green)" stroke-width="2.5"/>
+          <line x1="5" y1="24" x2="43" y2="24" stroke="var(--green)" stroke-width="2"/>
+          <circle cx="24" cy="24" r="7" fill="none" stroke="var(--green)" stroke-width="2"/>
+          <circle cx="31" cy="29" r="4.5" fill="var(--ink)" stroke="var(--text)" stroke-width="1.5"/>
+          <path d="M31 27.2 L32.7 30.5 L29.3 30.5 Z" fill="var(--text)"/>
+        </svg>
+        <div>
+          <h1>竞彩智算</h1>
+          <p>赛前概率推演 · 泊松模型 × 市场赔率</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabbar" aria-label="主导航">
+    <button class="tab active" data-tab="today"><span>🏟</span>今日</button>
+    <button class="tab" data-tab="combo"><span>🔗</span>串关</button>
+    <button class="tab" data-tab="teams"><span>📋</span>球队库</button>
+    <button class="tab" data-tab="calib"><span>📈</span>校准</button>
+    <button class="tab" data-tab="about"><span>💡</span>说明</button>
+  </nav>
+
+  <main id="view"></main>
+
+  <footer class="foot">
+    <p>数据源 football-data.co.uk · 仅供研究参考 · 请理性购彩，量力而行</p>
+  </footer>
+</div>
+
+<div id="modal-root"></div>
+
+<script src="js/ratings-data.js"></script>
+<script src="js/model.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
