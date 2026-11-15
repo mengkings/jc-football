@@ -42,7 +42,5 @@ jobs:
           gh release create "$TAG" footballs-ai.apk \
             --repo "$GITHUB_REPOSITORY" \
             --title "Footballs AI 安卓 APK" \
-            --notes "网页版: https://mengkings.github.io/jc-football/
-iOS: Safari 添加到主屏幕即可 (打包IPA需Mac+Xcode)。
-安装: 手机设置→安全→允许未知来源→打开APK安装。" \
+            --notes "网页版: https://mengkings.github.io/jc-football/ — iOS: Safari 添加到主屏幕即可 (打包IPA需Mac+Xcode)。安卓安装: 手机设置→安全→允许未知来源→打开APK安装。" \
             --latest || true
