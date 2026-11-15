@@ -26,6 +26,7 @@ jobs:
           npx cap add android
           cd android
           echo "org.gradle.jvmargs=-Xmx2g" >> gradle.properties
+          cat ../../tools/gradle-kotlin-fix.gradle >> build.gradle
           ./gradlew assembleDebug --no-daemon -q
           ls -la app/build/outputs/apk/debug/
       - name: 上传构建产物

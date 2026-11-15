@@ -1,0 +1,10 @@
+// 修复 kotlin-stdlib 与 kotlin-stdlib-jdk7/jdk8 重复类冲突
+// (老插件依赖 1.6.x 的 jdk7/jdk8 模块, Capacitor 7 用 1.8.22 已合并进 kotlin-stdlib)
+subprojects {
+  configurations.all {
+    resolutionStrategy.dependencySubstitution {
+      substitute module('org.jetbrains.kotlin:kotlin-stdlib-jdk8') using module('org.jetbrains.kotlin:kotlin-stdlib:1.8.22')
+      substitute module('org.jetbrains.kotlin:kotlin-stdlib-jdk7') using module('org.jetbrains.kotlin:kotlin-stdlib:1.8.22')
+    }
+  }
+}
