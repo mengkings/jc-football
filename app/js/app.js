@@ -21,11 +21,14 @@ let state = {
   history: store.get("fa_history", []),
   results: store.get("fa_results", {}),
   aiCache: {},
+  dateFilter: store.get("fa_datefilter", "today"),
+  lastLive: store.get("fa_lastlive", null), // { time, count } 体彩实时更新信息
   settings: store.get("fa_settings", { deepseekKey: "", oddsApiKey: "", leagues: ["soccer_epl","soccer_spain_la_liga","soccer_italy_serie_a","soccer_germany_bundesliga","soccer_france_ligue_one"] }),
 };
 function persist() {
   store.set("fa_matches", state.matches); store.set("fa_history", state.history);
   store.set("fa_results", state.results); store.set("fa_settings", state.settings);
+  store.set("fa_datefilter", state.dateFilter); store.set("fa_lastlive", state.lastLive);
 }
 const uid = () => Math.random().toString(36).slice(2, 9);
 
@@ -38,7 +41,8 @@ const cnName = k => DATA.cn[k] || k;
 const leagueName = lg => (DATA.leagues[lg] ? DATA.leagues[lg].name : "自定义");
 const pickName = k => ({ h: "主胜", d: "平局", a: "客胜" }[k]);
 const pickCls = k => ({ h: "blue", d: "gold", a: "purple" }[k]);
-const todayStr = () => new Date().toISOString().slice(0, 10);
+const todayStr = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); };
+const tomorrowStr = () => { const d = new Date(Date.now() + 864e5); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); };
 
 function toast(msg) {
   const el = document.createElement("div");
@@ -101,10 +105,35 @@ function invalidate(m) { analysisCache.delete(m.id); }
 
 function allAnalyzed() { return state.matches.map(m => ({ m, a: analyze(m) })); }
 
+/* 按日期筛选 (今日/明日/全部); 筛选结果为空时回退全部并提示 */
+function dateFiltered() {
+  const list = allAnalyzed();
+  if (state.dateFilter === "all") return { an: list, fallback: false };
+  const target = state.dateFilter === "tomorrow" ? tomorrowStr() : todayStr();
+  const f = list.filter(x => x.m.date === target);
+  return f.length ? { an: f, fallback: false } : { an: list, fallback: true };
+}
+
+/* 体彩官方接口直连刷新 */
+async function refreshSporttery(silent) {
+  try {
+    if (!silent) toast("正在获取体彩竞彩赛程…");
+    const live = await fetchSportteryLive();
+    const manual = state.matches.filter(m => !m.live);
+    state.matches = manual.concat(live);
+    state.lastLive = { time: new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }), count: live.length };
+    persist();
+    render();
+    if (!silent) toast("已更新 " + live.length + " 场竞彩比赛 (" + state.lastLive.time + ")");
+  } catch (e) {
+    if (!silent) toast("体彩接口获取失败: " + (e && e.message ? e.message : e) + "。可尝试导入体彩数据或用 the-odds-api");
+  }
+}
+
 /* 候选 (用于串关) */
 function candidates() {
   const out = [];
-  for (const { m, a } of allAnalyzed()) {
+  for (const { m, a } of dateFiltered().an) {
     const mk = m.odds || {};
     if (!(Array.isArray(mk.had) && mk.had.every(o => o > 1))) continue;
     const bk = a.mkts.wdlPick, hi = ["h","d","a"].indexOf(bk);
@@ -128,19 +157,27 @@ function candidates() {
  * 视图: 首页
  * ============================================================ */
 function viewHome() {
-  const an = allAnalyzed();
+  const { an, fallback } = dateFiltered();
   const n = an.length;
-  if (!n) return `
-  <div class="empty"><div class="big">⚽</div>还没有今日比赛<br>去「赛事研究」获取或导入赛程</div>
-  <div class="btn-row" style="justify-content:center;"><button class="btn" data-act="goto-research">前往赛事研究 →</button></div>`;
+  const live = state.lastLive;
+  const dateChips = `
+  <div class="btn-row" style="margin-top:6px;">
+    ${[["today","今日"],["tomorrow","明日"],["all","全部"]].map(([v, t]) =>
+      `<button class="chip ${state.dateFilter === v ? "active" : ""}" data-date="${v}" style="padding:7px 18px;font-size:12px;border-radius:999px;">${t}</button>`).join("")}
+    <span style="flex:1"></span>
+    ${live ? `<span class="hint" style="align-self:center;">体彩数据 ${live.time} 更新 · ${live.count} 场在售</span>` : ""}
+  </div>`;
+  if (!n) return dateChips + `
+  <div class="empty"><div class="big">⚽</div>还没有比赛<br>点右上角 🔄 拉取体彩当日竞彩, 或去「赛事研究」导入赛程</div>
+  <div class="btn-row" style="justify-content:center;"><button class="btn" data-act="refresh">🔄 立即拉取体彩赛程</button></div>`;
 
   const withOdds = an.filter(x => x.m.odds && x.m.odds.had);
   const ranked = [...an].sort((x, y) => y.a.researchScore - x.a.researchScore);
   const top5 = ranked.slice(0, 5);
   const schemes = withOdds.length >= 2 ? comboSchemes(candidates()) : [];
 
-  return `
-  <div class="section-title" style="margin-top:6px;">今日重点研究 TOP ${top5.length}</div>
+  return dateChips + (fallback ? `<div class="callout">当日无在售比赛, 已显示全部在售场次</div>` : "") + `
+  <div class="section-title" style="margin-top:6px;">${state.dateFilter === "tomorrow" ? "明日重点研究" : state.dateFilter === "all" ? "重点研究" : "今日重点研究"} TOP ${top5.length}</div>
   <div class="card" style="padding:0;">
   ${top5.map((x, i) => {
     const { m, a } = x;
@@ -152,7 +189,7 @@ function viewHome() {
       <div class="rank-no ${i < 3 ? "top" : ""}">${i+1}</div>
       <div class="rank-main">
         <div class="t">${esc(m.homeName)} vs ${esc(m.awayName)}</div>
-        <div class="m">${esc(m.leagueName || leagueName(m.league))} · ${esc(m.date)} ${esc(m.time)} · 模型一致 ${agree}/${a.modelKeys.length || "—"}</div>
+        <div class="m">${esc(m.leagueName || leagueName(m.league))} · ${esc(m.date)} ${esc(m.time)} · ${a.modelKeys.length ? `模型一致 ${agree}/${a.modelKeys.length}` : "纯市场推演"}</div>
       </div>
       <div class="rank-pick">
         <div class="p" style="color: var(--${pick === "h" ? "home" : pick === "a" ? "away" : "gold"});">${pickName(pick)}</div>
@@ -185,14 +222,22 @@ function viewHome() {
  * 视图: 赛事研究
  * ============================================================ */
 function viewResearch() {
-  const cards = state.matches.map(matchCard).join("");
+  const { an, fallback } = dateFiltered();
+  const cards = an.map(({ m }) => matchCard(m)).join("");
   return `
   <div class="btn-row" style="margin-top:6px;">
-    <button class="btn" data-act="fetch">⚡ 自动获取赛程</button>
+    <button class="btn" data-act="refresh">🔄 拉取体彩赛程</button>
+    <button class="btn ghost" data-act="fetch">⚡ 海外联赛(the-odds-api)</button>
     <button class="btn ghost" data-act="import">📋 导入体彩数据</button>
     <button class="btn ghost" data-act="add">＋ 手动添加</button>
   </div>
-  ${state.matches.length === 0 ? `<div class="empty"><div class="big">🏟</div>暂无比赛<br>「自动获取赛程」需在设置中填入 the-odds-api 免费Key</div>` : cards}
+  <div class="btn-row">
+    ${[["today","今日"],["tomorrow","明日"],["all","全部"]].map(([v, t]) =>
+      `<button class="chip ${state.dateFilter === v ? "active" : ""}" data-date="${v}" style="padding:7px 18px;font-size:12px;border-radius:999px;">${t}</button>`).join("")}
+    <span style="flex:1"></span>
+    <span class="hint" style="align-self:center;">${an.length} 场${fallback ? " (当日无, 显示全部)" : ""}</span>
+  </div>
+  ${an.length === 0 ? `<div class="empty"><div class="big">🏟</div>暂无比赛<br>点「拉取体彩赛程」获取当日竞彩 (国内网络直连体彩官方接口)</div>` : cards}
   `;
 }
 
@@ -216,6 +261,7 @@ function matchCard(m) {
   <div class="card" data-match="${m.id}">
     <div class="match-meta">
       <span class="badge mint">${esc(m.leagueName || leagueName(m.league))}</span>
+      ${m.live ? `<span class="badge gray">体彩官方</span>` : ""}
       <span>${esc(m.date)} ${esc(m.time)}</span>
       ${m.num ? `<span>${esc(m.num)}</span>` : ""}
       ${m.hline !== null && m.hline !== undefined ? `<span>让球 ${m.hline > 0 ? "+" : ""}${m.hline}</span>` : ""}
@@ -755,6 +801,7 @@ function bindView(v) {
     el.addEventListener("click", async () => {
       const act = el.dataset.act, id = el.dataset.id;
       if (act === "settings") openSettings();
+      else if (act === "refresh") refreshSporttery(false);
       else if (act === "add") openMatchModal();
       else if (act === "edit") openMatchModal(state.matches.find(x => x.id === id));
       else if (act === "import") openImportModal();
@@ -770,6 +817,9 @@ function bindView(v) {
   v.querySelectorAll("[data-lg]").forEach(el => {
     el.addEventListener("click", () => { dataLeague = el.dataset.lg; render(); });
   });
+  v.querySelectorAll("[data-date]").forEach(el => {
+    el.addEventListener("click", () => { state.dateFilter = el.dataset.date; persist(); render(); });
+  });
 }
 function closeModal() { $("#modal-root").innerHTML = ""; }
 
@@ -780,3 +830,5 @@ try {
   }
 } catch (e) { /* 沙箱预览环境不支持, 忽略 */ }
 render();
+/* 打开即自动拉取体彩当日竞彩 (静默, 失败不打扰) */
+setTimeout(() => refreshSporttery(true), 600);

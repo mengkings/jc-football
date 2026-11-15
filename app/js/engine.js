@@ -128,6 +128,21 @@ function analyzeMatch(match, data = DATA) {
       if (o > 1) value.push({ market: `让球(${match.hline>0?"+":""}${match.hline})`, pick: name, p: mkts.hcp[k], odds: o, ev: mkts.hcp[k]*o - 1, div: mkts.hcp[k] - imp[i] });
     });
   }
+  if (match.odds && Array.isArray(match.odds.ttg) && match.odds.ttg.length === 8 && match.odds.ttg.every(o => o > 1)) {
+    const imp = impliedProbs(match.odds.ttg);
+    match.odds.ttg.forEach((o, i) => {
+      if (o > 1) value.push({ market: "总进球", pick: (i === 7 ? "7+" : i) + "球", p: mkts.ttg[i], odds: o, ev: mkts.ttg[i]*o - 1, div: mkts.ttg[i] - imp[i] });
+    });
+  }
+  if (match.odds && match.odds.hafu && match.odds.hafu.hh) {
+    const HF_NAMES = { hh: "胜胜", hd: "胜平", ha: "胜负", dh: "平胜", dd: "平平", da: "平负", ah: "负胜", ad: "负平", aa: "负负" };
+    const entries = Object.entries(match.odds.hafu).map(([k, o]) => [k, Number(o)]).filter(([, o]) => o > 1);
+    const imp = impliedProbs(entries.map(([, o]) => o));
+    entries.forEach(([k, o], i) => {
+      const nm = HF_NAMES[k]; if (!nm) return;
+      value.push({ market: "半全场", pick: nm, p: mkts.hf[nm], odds: o, ev: mkts.hf[nm]*o - 1, div: mkts.hf[nm] - imp[i] });
+    });
+  }
   let divergence = null;
   if (lhEns !== null && mkt) {
     const mm = scoreMatrix(lhEns, laEns, rho);

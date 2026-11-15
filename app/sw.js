@@ -1,9 +1,9 @@
 /* Footballs AI 离线缓存 (安装到主屏幕后可离线使用)
    策略: 核心资源网络优先 (在线时拿最新版), 失败回退缓存 (离线可用) */
-const CACHE = "footballai-v1";
+const CACHE = "footballai-v2";
 const ASSETS = [
   "./", "./index.html", "./css/style.css",
-  "./js/data.js", "./js/engine.js", "./js/ai.js", "./js/oddsapi.js", "./js/app.js", "./js/version.js",
+  "./js/data.js", "./js/engine.js", "./js/sporttery.js", "./js/ai.js", "./js/oddsapi.js", "./js/app.js", "./js/version.js",
   "./manifest.webmanifest", "./icon-192.png", "./icon-512.png",
 ];
 self.addEventListener("install", e => {
