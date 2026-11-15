@@ -245,7 +245,7 @@ summary::-webkit-details-marker { display: none; }
 @media (min-width: 640px) {
   .tabbar {
     top: 0; bottom: auto; border-top: none; border-bottom: 1px solid var(--border);
-    justify-content: flex-start; padding-left: 24px;
+    justify-content: center; padding-left: 0;
     background: rgba(10,14,13,.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   }
   #app { padding-top: 70px; padding-bottom: 30px; }

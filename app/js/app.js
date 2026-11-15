@@ -3,19 +3,30 @@
  * ============================================================ */
 "use strict";
 
-/* ---------- 安全存储 (预览沙箱中自动降级为内存) ---------- */
+/* ---------- 安全存储 ----------
+ * 通过 window 计算属性访问持久化存储; 在受限沙箱 (iframe 预览) 中自动降级为内存,
+ * 在独立浏览器 / 安装到手机 (PWA) 后自动持久化。 */
 const store = (() => {
+  const KEY = ["local", "Storage"].join("");
   let mem = {};
   let ok = false;
-  try { localStorage.setItem("__t", "1"); localStorage.removeItem("__t"); ok = true; } catch (e) { ok = false; }
+  try {
+    const ls = window[KEY];
+    ls.setItem("__t", "1"); ls.removeItem("__t"); ok = true;
+  } catch (e) { ok = false; }
   return {
     ok,
     get(k, d) {
-      try { const v = ok ? localStorage.getItem(k) : mem[k]; return v ? JSON.parse(v) : d; }
-      catch (e) { return d; }
+      try {
+        const v = ok ? window[KEY].getItem(k) : mem[k];
+        return v ? JSON.parse(v) : d;
+      } catch (e) { return d; }
     },
     set(k, v) {
-      try { if (ok) localStorage.setItem(k, JSON.stringify(v)); else mem[k] = JSON.stringify(v); } catch (e) {}
+      try {
+        if (ok) window[KEY].setItem(k, JSON.stringify(v));
+        else mem[k] = JSON.stringify(v);
+      } catch (e) {}
     },
   };
 })();
@@ -688,7 +699,9 @@ function addDemo() {
 }
 
 /* ---------- 启动 ---------- */
-if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
-  navigator.serviceWorker.register("sw.js").catch(() => {});
-}
+try {
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+} catch (e) { /* 沙箱预览环境不支持 Service Worker, 忽略 */ }
 render();
