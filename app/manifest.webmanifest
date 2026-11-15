@@ -1,13 +1,13 @@
 {
-  "name": "竞彩智算 · 赛前概率推演",
-  "short_name": "竞彩智算",
-  "description": "基于泊松模型与市场赔率混合的竞彩足球赛前概率推演工具",
+  "name": "Footballs AI · 多模型竞彩研究",
+  "short_name": "Footballs AI",
+  "description": "泊松×Elo×xG三模型集成 + DeepSeek AI研究的竞彩足球赛前概率推演工具",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0a0e0d",
-  "theme_color": "#0a0e0d",
+  "background_color": "#091319",
+  "theme_color": "#091319",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }

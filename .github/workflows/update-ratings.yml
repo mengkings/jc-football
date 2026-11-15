@@ -15,11 +15,11 @@ jobs:
         with: { python-version: "3.12" }
       - name: 下载最新数据并重新训练
         run: |
-          for s in 2425 2526; do for l in E0 SP1 I1 D1 F1; do
+          for s in 2425 2526 2627; do for l in E0 SP1 I1 D1 F1; do
             curl -sL --max-time 60 -o "data/${l}_${s}.csv" "https://www.football-data.co.uk/mmz4281/${s}/${l}.csv" || true
           done; done
           python3 tools/model.py
-          python3 tools/gen_ratings_js.py
+          python3 tools/gen_data_js.py
       - name: 提交
         run: |
           git config user.name "github-actions[bot]"

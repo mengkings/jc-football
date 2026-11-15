@@ -1,0 +1,48 @@
+name: 构建安卓 APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['app/**', '.github/workflows/build-apk.yml']
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - name: 构建 Capacitor 安卓工程
+        run: |
+          mkdir -p build
+          cp -r app build/www
+          cd build
+          npm init -y > /dev/null 2>&1
+          npm install @capacitor/core @capacitor/cli @capacitor/android --no-fund --no-audit > /dev/null
+          npx cap init "Footballs AI" com.footballai.app --web-dir www
+          npx cap add android
+          cd android
+          echo "org.gradle.jvmargs=-Xmx2g" >> gradle.properties
+          ./gradlew assembleDebug --no-daemon -q
+          ls -la app/build/outputs/apk/debug/
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: footballs-ai-apk
+          path: build/android/app/build/outputs/apk/debug/app-debug.apk
+      - name: 发布到 Release (可下载 APK)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cp build/android/app/build/outputs/apk/debug/app-debug.apk footballs-ai.apk
+          TAG="v$(date +%Y.%m.%d-%H%M)"
+          gh release create "$TAG" footballs-ai.apk \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Footballs AI 安卓 APK" \
+            --notes "网页版: https://mengkings.github.io/jc-football/
+iOS: Safari 添加到主屏幕即可 (打包IPA需Mac+Xcode)。
+安装: 手机设置→安全→允许未知来源→打开APK安装。" \
+            --latest || true

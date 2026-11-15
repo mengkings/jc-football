@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0a0e0d">
-<meta name="description" content="竞彩智算 —— 基于泊松模型与市场赔率混合的竞彩足球赛前概率推演工具">
-<title>竞彩智算 · 赛前概率推演</title>
+<meta name="theme-color" content="#091319">
+<meta name="description" content="Footballs AI —— 泊松×Elo×xG 三模型集成 + DeepSeek AI 研究的竞彩足球赛前概率推演工具">
+<title>Footballs AI · 多模型竞彩研究</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -18,39 +18,40 @@
     <div class="topbar-inner">
       <div class="brand">
         <svg class="logo" viewBox="0 0 48 48" aria-hidden="true">
-          <rect x="5" y="5" width="38" height="38" rx="10" fill="none" stroke="var(--green)" stroke-width="2.5"/>
-          <line x1="5" y1="24" x2="43" y2="24" stroke="var(--green)" stroke-width="2"/>
-          <circle cx="24" cy="24" r="7" fill="none" stroke="var(--green)" stroke-width="2"/>
-          <circle cx="31" cy="29" r="4.5" fill="var(--ink)" stroke="var(--text)" stroke-width="1.5"/>
-          <path d="M31 27.2 L32.7 30.5 L29.3 30.5 Z" fill="var(--text)"/>
+          <rect x="4" y="4" width="40" height="40" rx="12" fill="#0D1B24" stroke="#2EE6A8" stroke-width="2.5"/>
+          <path d="M14 34 L24 14 L34 34" fill="none" stroke="#2EE6A8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="24" cy="27" r="4" fill="#38B6FF"/>
         </svg>
         <div>
-          <h1>竞彩智算</h1>
-          <p>赛前概率推演 · 泊松模型 × 市场赔率</p>
+          <h1>Footballs AI</h1>
+          <p>泊松 × Elo × xG × DeepSeek</p>
         </div>
       </div>
+      <button class="icon-btn" data-act="settings" aria-label="设置">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
     </div>
   </header>
 
   <nav class="tabbar" aria-label="主导航">
-    <button class="tab active" data-tab="today"><span>🏟</span>今日</button>
-    <button class="tab" data-tab="combo"><span>🔗</span>串关</button>
-    <button class="tab" data-tab="teams"><span>📋</span>球队库</button>
-    <button class="tab" data-tab="calib"><span>📈</span>校准</button>
-    <button class="tab" data-tab="about"><span>💡</span>说明</button>
+    <button class="tab active" data-tab="home"><span>🏠</span>首页</button>
+    <button class="tab" data-tab="research"><span>🏟</span>赛事研究</button>
+    <button class="tab" data-tab="history"><span>📜</span>历史记录</button>
+    <button class="tab" data-tab="data"><span>🗄</span>数据中心</button>
   </nav>
 
   <main id="view"></main>
 
   <footer class="foot">
-    <p>数据源 football-data.co.uk · 仅供研究参考 · 请理性购彩，量力而行</p>
+    <p>数据源 football-data.co.uk · the-odds-api · DeepSeek · 仅供研究参考 · 理性购彩</p>
   </footer>
 </div>
 
 <div id="modal-root"></div>
-
-<script src="js/ratings-data.js"></script>
-<script src="js/model.js"></script>
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/oddsapi.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
